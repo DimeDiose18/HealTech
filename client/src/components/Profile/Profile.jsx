@@ -17,13 +17,9 @@ import { ThemeProvider } from "@mui/system";
 import theme from "../../../theme";
 import { useAuthStore } from "../../store/authStore";
 import guest from "../../assets/images/avatars/avatar10.jpg";
-
-// Firebase
 import { initializeApp } from "firebase/app";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-
-// Importa react-hot-toast
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -56,11 +52,10 @@ export default function Profile({onlyEdit}) {
   let downloadURL = "";
 
   const handleTeamChange = (event) => {
-    setSelectedTeam(event.target.value); // Actualiza el estado con el equipo seleccionado
+    setSelectedTeam(event.target.value); 
     setHasChanges(true); // bandera para saber que si hubo cambio
   };
 
-  console.log(onlyEdit);
   useEffect(() => {
     handleGetSales();
     axios
@@ -76,6 +71,7 @@ export default function Profile({onlyEdit}) {
   useEffect(() => {
     const handleGetUser = async () => {
       try {
+        if (!user.email) return
         const response = await axios.get("/users/getUser", {
           params: {
             email: user.email,
@@ -188,9 +184,9 @@ export default function Profile({onlyEdit}) {
       toast.error("Cannot edit guest user");
     }
   };
-
   const handleGetSales = async () => {
     try {
+      if (!user.id_user) return
       const { data } = await axios(
         `sales/getUserSales?id_user=${user.id_user}`
       );
@@ -200,7 +196,6 @@ export default function Profile({onlyEdit}) {
       const lastDataSale = data.slice(0, 3).map((registro) => {
         const product = registro.Products[0];
         const quantity = Math.round(registro.total / parseFloat(product.price));
-
         return {
           date: registro.date.split("T")[0],
           product: product.name,
@@ -208,7 +203,6 @@ export default function Profile({onlyEdit}) {
           total: registro.total,
         };
       });
-
       setActivitySale(lastDataSale);
 
       const secondData = await axios("/dashboard/getUserRating", {
@@ -216,15 +210,17 @@ export default function Profile({onlyEdit}) {
           email: user.email,
         },
       });
-
       const rawData = secondData.data.slice(0, 3);
-
-      const filteredData = rawData.map((element) => ({
-        date: element.updatedAt.split("T")[0],
-        comment: element.comment,
-        rating: element.rating,
-        productName: element.Product.name,
-      }));
+      
+      // Voy a traer sólo los comentarios activos
+      const filteredData = rawData
+        .filter((element) => element.active === true)
+        .map((element) => ({
+          date: element.updatedAt.split("T")[0],
+          comment: element.comment,
+          rating: element.rating,
+          productName: element.Product.name,
+        }));
 
       setActivityReview(filteredData);
     } catch (error) {
@@ -264,7 +260,6 @@ export default function Profile({onlyEdit}) {
                   value={formData.first_name}
                   onChange={handleInputChange}
                   disabled={!isEditing}
-                  sx={{ marginBottom: "16px" }}
                 />
                 <TextField
                   type="text"
@@ -275,7 +270,6 @@ export default function Profile({onlyEdit}) {
                   value={formData.last_name}
                   onChange={handleInputChange}
                   disabled={!isEditing}
-                  sx={{ marginBottom: "16px" }}
                 />
                 <TextField
                   type="text"
@@ -286,7 +280,6 @@ export default function Profile({onlyEdit}) {
                   value={formData.username}
                   onChange={handleInputChange}
                   disabled={!isEditing}
-                  sx={{ marginBottom: "16px" }}
                 />
                 <Select
                   label="Team"
@@ -295,7 +288,6 @@ export default function Profile({onlyEdit}) {
                   onChange={handleTeamChange}
                   size="small"
                   fullWidth
-                  sx={{ marginBottom: "16px" }}
                   disabled={!isEditing}
                 >
                   {teams?.map((team, key) => (
@@ -349,7 +341,6 @@ export default function Profile({onlyEdit}) {
                         cursor: "pointer",
                         borderRadius: "4px",
                         fontSize: "12px",
-                        marginBottom: "1rem",
                       }}
                       disabled={!isEditing}
                     >
@@ -424,9 +415,6 @@ export default function Profile({onlyEdit}) {
           }
         </Grid>
       </Container>
-      <Toaster position="top-center" reverseOrder={false} />
     </ThemeProvider>
   );
 }
-
-

@@ -2,10 +2,10 @@ import axios from 'axios'
 import { create } from 'zustand'
 
 const userGuest = {
-  username: '?',
+  username: 'guest',
   email: '',
   role: 'guest',
-  avatar: '../assets/images/avatars/avatar10.jpg',
+  avatar: '../src/assets/images/avatars/avatar10.jpg',
   teamName: 'none',
   ip_location:{
     currency: "USD",
@@ -64,8 +64,8 @@ const useAuthStore = create((set) => ({
       } else {
         throw new Error('Invalid credentials')
       }
-    } catch (error) {
-      throw new Error(error.message)
+    } catch (error) {;
+      throw new Error(error.response.data.message)
     }
   },
 

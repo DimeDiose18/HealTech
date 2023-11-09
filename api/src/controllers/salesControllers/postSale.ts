@@ -2,7 +2,6 @@ const { Sale, Product, User, Coupon } = require('../../db_connection');
 import { Request, Response } from "express";
 import currenciesExchange from "../currenciesExchanges"
 import axios from "axios";
-// import { parse } from "path";
 
 const createSale = async (req:Request, res:Response) => {
     const {  total, address, phone_number, products, email, coupon, currency } = req.body;
@@ -10,7 +9,7 @@ const createSale = async (req:Request, res:Response) => {
     const parsedCurrency= await currenciesExchange(currency, 'USD', parsedTotal.toString())
     try {
         if(!total || !address || !phone_number || !products || !email)
-        {res.status(400).json({ message: "Missing required fields" })}
+        {return res.status(400).json({ message: "Missing required fields" })}
         const user = await User.findOne({ where: { email } });
         if (!user) {
             return res.status(404).json({ message: "User not found" });
@@ -23,7 +22,7 @@ const createSale = async (req:Request, res:Response) => {
         });
         await sale.setUser(user);
         if(coupon){
-            const couponFound = await Coupon.findOne({ where: { code: coupon } });
+            const couponFound = await Coupon.findOne({ where: { code: coupon.coupon } });
             if (!couponFound) {
                 return res.status(404).json({ message: "Cupon not found" });
             }
@@ -46,11 +45,10 @@ const createSale = async (req:Request, res:Response) => {
             id_product: product.id_product,
             quantity: product.quantity
             }));
-        console.log('stock', productStock)
         try {
             await axios.put('http://localhost:8000/products/stockUpdate?operation=subtract', productStock)
-        } catch (error) {
-            console.log(error)
+        } catch (error:any) {
+            console.log(error.message)
         }
 
         const productsToAssociate = await Product.findAll({ where: { id_product: productsList } });
@@ -61,7 +59,6 @@ const createSale = async (req:Request, res:Response) => {
         await sale.setProducts(productsToAssociate);
         return res.status(200).json({ message: "Sale created successfully" });
     } catch (error:any) {
-        console.log(error)
         return res.status(500).json({ error: error.message });
     }
 }

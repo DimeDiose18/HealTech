@@ -8,6 +8,7 @@ import ProfileSidebar from "./ProfileSideBar";
 import { ProfileTabs } from "./ProfileTabs";
 import Profile from "../../components/Profile/Profile";
 import ReusableModal from "../../components/ReusableModal/ReusableModal";
+import RoutineForm from "../../components/RoutineForm/RoutineForm";
 
 
 function ProfilePage() {
@@ -15,6 +16,15 @@ function ProfilePage() {
   const [routines, setRoutines] = useState([]);
   const [sales, setSales] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpenRoutine, setIsModalOpenRoutine] = useState(false);
+
+  const openModalRoutine = () => {
+    setIsModalOpenRoutine(true);
+  };
+
+  const closeModalRoutine = () => {
+    setIsModalOpenRoutine(false);
+  };
 
   const handleEditProfileClick = () => {
     setIsModalOpen(true);
@@ -25,12 +35,14 @@ function ProfilePage() {
   };
 
   const getRoutines = async () => {
+      if (user.email === '') return
     const { data } = await axios.get(
       `/routines/getUserRoutines?email=${user.email}`
     );
     setRoutines(data);
   };
   const getSales = async () => {
+      if (!user.id_user) return
     const { data } = await axios.get(
       `/sales/getUserSales?id_user=${user.id_user}`
     );
@@ -62,6 +74,10 @@ function ProfilePage() {
             </Grid>
           </Grid>
         </main>
+        {/* <div>
+        <button onClick={openModalRoutine}>Agregar rutina</button>
+        <RoutineForm user={user} open={isModalOpenRoutine} onClose={closeModalRoutine} />
+        </div> */}
       </div>
     </>
   );

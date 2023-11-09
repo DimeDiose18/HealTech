@@ -4,7 +4,7 @@ import { Request, Response } from "express";
 const putUserRoutineDate = async (req: Request, res: Response) => {
   const { idUser, idRoutine, Date, hour } = req.body;
 
-  if (!idUser || !idRoutine || !Date || !hour) {
+  if (!idUser || !idRoutine || !Date) {
     return res.status(400).json({ error: "Missing required fields" });
   }
 
